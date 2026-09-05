@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "flowbite-react/plugin/tailwindcss";
+@source "../.flowbite-react/class-list.json";
+@source "../node_modules/flowbite-react/dist/**/*.mjs";
+@plugin "flowbite/plugin";
+
+@custom-variant dark (false);
+
+@utility bg-grad-green {
+  background: linear-gradient(
+    30deg,
+    var(--color-emerald-400),
+    var(--color-teal-700)
+  );
+  color: var(--color-white);
+}
+
+@utility bg-grad-purple {
+  background: linear-gradient(
+    30deg,
+    var(--color-purple-400),
+    var(--color-blue-600)
+  );
+  color: var(--color-white);
+}
+
+@utility bg-grad-amber {
+  background: linear-gradient(
+    30deg,
+    var(--color-amber-400),
+    var(--color-orange-600)
+  );
+  color: var(--color-white);
+}
+
+@utility bg-grad-blue {
+  background: linear-gradient(
+    30deg,
+    var(--color-blue-400),
+    var(--color-indigo-700)
+  );
+  color: var(--color-white);
+}
+
+@utility bg-grad-rose {
+  background: linear-gradient(
+    30deg,
+    var(--color-rose-400),
+    var(--color-red-700)
+  );
+  color: var(--color-white);
+}
+
+@utility bg-grad-dark {
+  background: linear-gradient(
+    30deg,
+    var(--color-slate-700),
+    var(--color-neutral-900)
+  );
+  color: var(--color-white);
+}
