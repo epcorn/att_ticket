@@ -1,9 +1,13 @@
 import { Ticket } from "../models/ticketModel.js";
 
 export const ticketServices = {
-  create: async (data) => {
+  create: async (data, user) => {
     try {
-      const issuedTicket = await Ticket.create(data);
+      const issuedTicket = await Ticket.create({
+        ...data,
+        createdBy: { id: user._id, username: user.username },
+      });
+
       if (!issuedTicket) {
         const error = new Error("");
         error.statusCode = 400;
@@ -15,6 +19,22 @@ export const ticketServices = {
       throw error;
     }
   },
+  updateTicket: async (data, ticketId) => {
+    try {
+      const payload = data.data;
+      console.log(payload);
+      const ticket = await Ticket.findByIdAndUpdate(
+        ticketId,
+        { $set: { ...payload } },
+        { new: true, runValidators: true },
+      );
+
+      return ticket;
+    } catch (error) {
+      throw error;
+    }
+  },
+  assignTicket:async()=>{},
   getAllTickets: async (req) => {
     try {
       const startIdx = parseInt(req.query.startIdx) || 0;
@@ -25,7 +45,7 @@ export const ticketServices = {
         Ticket.find({}),
         Ticket.countDocuments({}),
         Ticket.find({
-          ...(req.query.contract && {
+          ...(req.query.createdBy && {
             "createdBy.username": {
               $regex: new RegExp(req.query.createdBy, "i"),
             },

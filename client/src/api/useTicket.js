@@ -23,17 +23,46 @@ export const useCreateTicket = () => {
   });
 };
 
-export const useGetAllTickets = (options = {}) => {
+export const useGetAllTickets = (filters = {}, options = {}) => {
+  const {
+    createdBy = "",
+    contractNo = "",
+    status = "",
+    ticketNo = "",
+  } = filters;
   return useQuery({
-    queryKey: ["ticket"],
+    queryKey: ["ticket", { createdBy, contractNo, status, ticketNo }],
     queryFn: async () => {
-      const res = await fetch(`/api/ticket/getAllTickets`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `/api/ticket/getAllTickets?createdBy=${createdBy}&contractNo=${contractNo}&status=${status}&ticketNo=${ticketNo}`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
       if (!res.ok) throw new Error("failed to get contract");
 
       return await res.json();
+    },
+    ...options,
+  });
+};
+
+export const useUpdateTicket = (options = {}) => {
+  return useMutation({
+    mutationKey: ["ticket"],
+    mutationFn: async ({ id, ...data }) => {
+      const res = await fetch(`api/ticket/update/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("update failed");
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ticket"] });
     },
     ...options,
   });

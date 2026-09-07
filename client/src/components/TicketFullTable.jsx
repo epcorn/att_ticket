@@ -1,5 +1,4 @@
 import {
-  Badge,
   Table,
   TableBody,
   TableCell,
@@ -12,6 +11,8 @@ import { TableError, TableLoading } from "./TableStats";
 import { useMyStore } from "../store/useStore";
 import ModalComponent from "./ModalComponent";
 import { checkRights } from "../utils/helper";
+import CreateModal from "./CreateModal";
+import PrintTicket from "./ticket_modals/PrintTicket";
 
 
 function TicketFullTable({ tickets, isError, isFetching }) {
@@ -67,9 +68,19 @@ function TicketFullTable({ tickets, isError, isFetching }) {
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <div className="w-fit">
-                      <Badge color="info" size="sm" className="text-sm cursor-pointer">
-                        view
-                      </Badge>
+                      <ModalComponent
+                        open={id === `${ticket._id}view` && status === true}
+                        setOpen={(isOpen) =>
+                          setToggle(isOpen ? `${ticket._id}view` : "", isOpen)
+                        }
+                        buttonLabel="View"
+                        header="View"
+                        size="sm"
+                        disabled={ticket.status === "Canceled"}
+                        btn="bg-grad-dark"
+                      >
+                        <CreateModal ticket={ticket} onClose={() => setToggle(`${ticket._id}view`, false)} edit={true} />
+                      </ModalComponent>
                     </div>
                   </TableCell>
                   <TableCell className="px-0 whitespace-nowrap">
@@ -84,7 +95,9 @@ function TicketFullTable({ tickets, isError, isFetching }) {
                         size="sm"
                         disabled={ticket.status === "Canceled"}
                         btn="bg-grad-green"
-                      />
+                      >
+                        <PrintTicket ticket={ticket} />
+                      </ModalComponent>
                       {ticket.history &&
                         <ModalComponent
                           open={id === `${ticket._id}history` && status === true}

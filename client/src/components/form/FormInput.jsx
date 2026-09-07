@@ -1,6 +1,6 @@
 import { Label, TextInput } from 'flowbite-react'
 
-function FormInput({ label, type = "text", register, errors, value, id, required }) {
+function FormInput({ label, type = "text", register, readOnly = false, errors, value, id, required = true }) {
   return (
     <div>
       <Label>
@@ -17,11 +17,13 @@ function FormInput({ label, type = "text", register, errors, value, id, required
       </Label>
       <TextInput
         type={type}
-        readOnly
-        required
-        value={value || ""}
+        readOnly={readOnly}
+        value={value}
         {...register(id, { required: required })}
       />
+      {errors[id] && (
+        <span className="text-xs text-red-500">This field is required</span>
+      )}
     </div>
   )
 }

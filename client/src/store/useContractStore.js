@@ -12,6 +12,8 @@ export const useContractStore = create((set) => ({
   billToName: "",
   billToAddress: "",
   shipToName: "",
+  billToEmail: [],
+  shipToEmail: [],
   shipToAddress: "",
   filterError: null,
   status: "initial",
@@ -27,6 +29,8 @@ export const useContractStore = create((set) => ({
         billToAddress: "",
         shipToName: "",
         shipToAddress: "",
+        billToEmail: [],
+        shipToEmail: [],
       });
     const {
       a1 = "",
@@ -38,6 +42,7 @@ export const useContractStore = create((set) => ({
       name = "",
       pincode = "",
       prefix = "",
+      kci = [],
     } = filtered.billToAddress || {};
 
     const {
@@ -49,6 +54,7 @@ export const useContractStore = create((set) => ({
       city: sCity = "",
       projectName = "",
       pincode: sPincode = "",
+      kci: sKci = [],
     } = filtered.shipToAddress || {};
 
     set({
@@ -59,6 +65,8 @@ export const useContractStore = create((set) => ({
       billToName: formatAddress(prefix, name),
       shipToAddress: formatAddress(s1, s2, s3, s4, s5, sCity, sPincode),
       shipToName: projectName.trim(),
+      billToEmail: kci.map((k) => k.email),
+      shipToEmail: sKci.map((k) => k.email),
     });
   },
   resetStore: () =>
@@ -70,5 +78,7 @@ export const useContractStore = create((set) => ({
       shipToAddress: "",
       filterError: null,
       status: "initial",
+      billToEmail: [],
+      shipToEmail: [],
     }),
 }));
