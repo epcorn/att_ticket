@@ -1,4 +1,5 @@
 import { Ticket } from "../models/ticketModel.js";
+import { ticketHistoryService } from "./ticketHistory.service.js";
 
 export const ticketServices = {
   create: async (data, user) => {
@@ -13,20 +14,45 @@ export const ticketServices = {
         error.statusCode = 400;
         throw error;
       }
+      await ticketHistoryService.createTicketHistory(
+        issuedTicket.ticketNo,
+        user,
+      );
       return issuedTicket;
     } catch (error) {
       if (!error.statusCode) error.statusCode = 400;
       throw error;
     }
   },
-  updateTicket: async (data, ticketId) => {
+
+  closeTicket: async (data, req) => {
     try {
-      const payload = data.data;
-      console.log(payload);
       const ticket = await Ticket.findByIdAndUpdate(
-        ticketId,
-        { $set: { ...payload } },
-        { new: true, runValidators: true },
+        req.params.id,
+        { $set: { status: "Closed" } },
+        { returnDocument: "after", runValidators: true },
+      )
+        .populate({ path: "history", select: "changes" })
+        .lean();
+
+      return ticket;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  assignTicket: async (data, req) => {
+    try {
+      await ticketHistoryService.createTicketHistoryEntry(
+        data.ticketNo,
+        "Open",
+        "Assigned",
+        req.user,
+      );
+      const ticket = await Ticket.findByIdAndUpdate(
+        req.params.id,
+        { $set: { ...data } },
+        { returnDocument: "after", runValidators: true },
       );
 
       return ticket;
@@ -34,7 +60,40 @@ export const ticketServices = {
       throw error;
     }
   },
-  assignTicket:async()=>{},
+
+  reschedule: async (data, req) => {
+    try {
+      const ticket = await Ticket.findByIdAndUpdate(
+        req.params.id,
+        {
+          $set: {
+            scheduledDate: data.scheduledDate,
+            scheduledTime: data.scheduledTime,
+          },
+        },
+        { returnDocument: "after", runValidators: true },
+      )
+        .populate({ path: "history", select: "changes" })
+        .lean();
+
+      await ticketHistoryService.ticketHistoryRechedule(
+        ticket.history._id,
+        data.message,
+        req.user,
+        {
+          scheduledDate: data.scheduledDate,
+          scheduledTime: data.scheduledTime,
+        },
+      );
+      return ticket;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  cancelTicket: async (data, ticketId) => {},
+
   getAllTickets: async (req) => {
     try {
       const startIdx = parseInt(req.query.startIdx) || 0;

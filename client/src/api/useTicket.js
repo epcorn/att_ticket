@@ -23,6 +23,21 @@ export const useCreateTicket = () => {
   });
 };
 
+export const useImageUploade = () => {
+  return useMutation({
+    mutationKey: ["ticket"],
+    mutationFn: async (imgs) => {
+      const res = await fetch(`/api/upload`, {
+        method: "POST",
+        body: imgs,
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Image not uploaded! try again");
+      return await res.json();
+    },
+  });
+};
+
 export const useGetAllTickets = (filters = {}, options = {}) => {
   const {
     createdBy = "",
@@ -58,7 +73,7 @@ export const useUpdateTicket = (options = {}) => {
         body: JSON.stringify(data),
         credentials: "include",
       });
-      if (!res.ok) throw new Error("update failed");
+      if (!res.ok) throw new Error("update failed", res);
       return await res.json();
     },
     onSuccess: () => {

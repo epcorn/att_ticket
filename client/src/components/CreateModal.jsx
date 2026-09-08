@@ -66,7 +66,6 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
         : { complainMode: "email", ...savedForm },
   });
 
-
   const {
     status,
     billToName,
@@ -83,12 +82,13 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
   const number = watch("contract.number");
   const complainMode = watch("complainMode");
 
-  const submit = async (data) => {
 
+  const submit = async (data) => {
     try {
       if (edit) {
         if (!data.agent || !data.scheduledDate || !data.scheduledTime) return
-        const payload = { agent: data.agent, scheduledDate: data.scheduledDate, scheduledTime: data.scheduledTime, status: data.status }
+        const payload = { agent: data.agent, scheduledDate: data.scheduledDate, scheduledTime: data.scheduledTime, status: ticket?.status, ticketNo: ticket?.ticketNo }
+
         await update({ id: ticket._id, data: payload });
         toast.success("Ticket updated");
       }
@@ -97,6 +97,9 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
       }
       toast.success("Ticket created successfully");
       if (onClose) onClose();
+      localStorage.removeItem("create_ticket")
+      resetStore();
+      reset()
     } catch (error) {
       toast.error("U oooh!!!! ticket creation failed");
       console.error(error);
@@ -118,7 +121,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
     e.preventDefault();
     resetStore();
 
-    if (contracts?.length && number) {
+    if (contracts?.result?.length && number) {
       setFilteredContract(contracts, number);
     }
   };
@@ -155,6 +158,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
     if (shipToName) setValue("contract.shipToName", shipToName);
     if (billToEmail) setValue("contract.billToEmail", billToEmail);
     if (shipToEmail) setValue("contract.shipToEmail", shipToEmail);
+    setValue("contract.treatment", "Anti Termite Treatment");
   }, [
     billToAddress,
     billToEmail,
@@ -304,6 +308,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
             <div className="p-2 rounded-md">
               <h3 className="font-bold">Email Screenshot</h3>
               <ImageUploader
+                errors={errors}
                 disabled={view || edit}
                 buttonLabel="Image Upload"
                 header="Image Upload"
@@ -368,14 +373,14 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
           </div>
         </div>
 
-        {edit && (
+        {(edit || view) && (
           <div className="space-y-3 mt-4">
             <p className="my-2 text-red-700 font-bold">Edit Details Below <span className="text-3xl">👇</span></p>
             <div>
               <Label className="font-semibold">
                 Select Agent<span className="text-red-600">*</span>
               </Label>
-              <Select {...register("agent", { required: edit })}>
+              <Select {...register("agent", { required: edit })} disabled={view}>
                 <option value="">Please select agent</option>
                 <option value="Executive">Executive</option>
                 <option value="Supervisor">Supervisor</option>
@@ -389,13 +394,13 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
               <TextInput
                 type="date"
                 disabled={view}
-                {...register("scheduledDate")}
+                {...register("scheduledDate", { required: edit })}
               />
 
             </div>
             <div>
               <Label>Select Time</Label>
-              <Select {...register('scheduledTime')} disabled={view}>
+              <Select {...register('scheduledTime', { required: edit })} disabled={view}>
                 <option value="">Select time range</option>
                 {timings.map(t => (
                   <option key={t.value} value={t.value}>{t.value}</option>
@@ -404,7 +409,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
             </div>
             <div>
               <Label>Resources</Label>
-              <Textarea {...register('resource')} placeholder="All resources" className="placeholder:text-gray-500">
+              <Textarea {...register('resource', { required: edit })} disabled={view} placeholder="All resources" className="placeholder:text-gray-500">
               </Textarea>
             </div>
           </div>
@@ -413,6 +418,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
         {!view && (
           <Button
             type="submit"
+            disabled={creatingTicket || updating}
             className={`m-3 mx-auto transition-all duration-700 ${creatingTicket ? "bg-emerald-800" : "bg-emerald-600"}`}>
             {creatingTicket || updating ? (
               <div className="flex items-center gap-3">

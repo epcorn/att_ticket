@@ -65,8 +65,8 @@ export const useContractStore = create((set) => ({
       billToName: formatAddress(prefix, name),
       shipToAddress: formatAddress(s1, s2, s3, s4, s5, sCity, sPincode),
       shipToName: projectName.trim(),
-      billToEmail: kci.map((k) => k.email),
-      shipToEmail: sKci.map((k) => k.email),
+      billToEmail: kci?.map((k) => k?.email?.trim()).filter(Boolean),
+      shipToEmail: sKci?.map((k) => k?.email?.trim()).filter(Boolean),
     });
   },
   resetStore: () =>

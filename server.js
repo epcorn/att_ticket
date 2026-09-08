@@ -2,24 +2,31 @@ import express from "express";
 import mongoose from "mongoose";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
-import errorMiddleware from "./middleware/errorMiddleware.js";
-import userRouter from "./routes/userRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
-import contractRoutes from "./routes/contractRoutes.js";
 import fileUpload from "express-fileupload";
 import { v2 as cloudinary } from "cloudinary";
-import { uploader } from "./services/imgUploader.js";
+dotenv.config();
+
+import userRouter from "./routes/userRoutes.js";
+import errorMiddleware from "./middleware/errorMiddleware.js";
+import contractRoutes from "./routes/contractRoutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
 import { authenticateUser } from "./middleware/authMiddleware.js";
-dotenv.config();
+import { uploader } from "./controllers/contractController.js";
 
 const app = express();
 
+//red colnsole error
+const originalConsoleError = console.error;
+console.error = function (...args) {
+  originalConsoleError("\x1b[31m" + args.join(" ") + "\x1b[0m");
+};
+
 cloudinary.config({
-  cloud_name: "",
-  api_key: "",
-  api_secret: "",
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_KEY,
+  api_secret: process.env.CLOUD_SECRET,
   secure: true,
 });
 
@@ -52,9 +59,9 @@ app.get("/", (req, res, next) => {
 });
 
 app.use("/api/user", userRouter);
-app.use("/api/contracts", contractRoutes);
+app.use("/api/contracts", authenticateUser, contractRoutes);
 app.use("/api/ticket", authenticateUser, ticketRoutes);
-app.use("/upload", uploader);
+app.post("/api/upload", authenticateUser, uploader);
 
 app.use(errorMiddleware);
 

@@ -12,13 +12,32 @@ export const createTicket = async (req, res, next) => {
 };
 
 export const updateTicket = async (req, res, next) => {
+  const body = req.body.data;
+  console.log("body", body);
   try {
+    let ticket;
+    const shouldAssign =
+      body.agent && body.scheduledDate && body.status === "Open";
 
-    // const ticket = await ticketServices.updateTicket(req.body, req.params.id);
-    console.log(req.body);
-    res
-      .status(200)
-      .json({ success: true,  msg: "ticket updated successfully" });
+    if (body.status === "Closed") {
+      try {
+        ticket = await ticketServices.closeTicket(body, req);
+      } catch (error) {
+        next(error);
+      }
+    }
+    if (shouldAssign) {
+      body.status = "Assigned";
+      ticket = await ticketServices.assignTicket(body, req);
+    }
+    if (body.key === "reschedule") {
+      ticket = await ticketServices.reschedule(body, req);
+    }
+    res.status(200).json({
+      success: true,
+      ticket,
+      msg: "ticket updated successfully",
+    });
   } catch (error) {
     next(error);
   }

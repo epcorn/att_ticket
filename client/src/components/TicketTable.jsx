@@ -4,10 +4,10 @@ import { TableError, TableLoading } from "./TableStats";
 function TicketTable({ tickets, isFetching, isError }) {
   return (
     <div className="">
-      <div className="relative overflow-x-auto shadow-sm rounded-lg border ">
+      <div className="relative overflow-x-auto shadow-lg rounded-lg  [corner-shape:squircle] ">
         <Table hoverable={true}>
           {/* Changed from Table.Head */}
-          <TableHead className="[&_th]:bg-green-300 text-gray-700">
+          <TableHead className="[&_th]:bg-green-300 text-gray-700 text-sm">
             {/* Changed from Table.HeadCell */}
             <TableRow>
               <TableHeadCell>Ticket No</TableHeadCell>
@@ -20,7 +20,7 @@ function TicketTable({ tickets, isFetching, isError }) {
           </TableHead>
 
           {/* Changed from Table.Body */}
-          <TableBody className="divide-y">
+          <TableBody className="divide-y [&_tr]:bg-gray-100">
             {isFetching ? (
               <TableLoading count={6} />
             ) : isError ? (
@@ -46,7 +46,7 @@ function TicketTable({ tickets, isFetching, isError }) {
                     {/* Placeholder for Quarterly Count */}
                   </TableCell>
                   <TableCell>
-                    {/* Placeholder for Due time */}
+                    {ticket?.scheduledTime}
                   </TableCell>
                   <TableCell>
                     <span className="capitalize font-semibold text-gray-700">
