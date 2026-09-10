@@ -25,3 +25,23 @@ export const signup = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await userService.getAllUsers();
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const creds = req.body;
+    const user = await userService.updateUser(creds, id);
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};

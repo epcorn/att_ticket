@@ -5,8 +5,10 @@ import flowbiteReact from "flowbite-react/plugin/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/",
   plugins: [tailwindcss(), react(), flowbiteReact()],
   server: {
+    allowedHosts: true,
     port: 3001,
     proxy: {
       "/api": {

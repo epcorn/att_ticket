@@ -1,13 +1,18 @@
 {
-  "name": "att_ticket",
+  "name": "Att_ticket",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "type": "module",
   "scripts": {
+    "start": "node server.js",
     "test": "npx nodemon server.js",
+    "build": "npm run setup-production",
     "client": "npm run dev --prefix client",
-    "dev": "concurrently \"npx nodemon server.js\" \"npm run client\""
+    "dev": "concurrently \"npx nodemon server.js\" \"npm run client\"",
+    "setup-production": "npm run install-client && npm run build-client",
+    "install-client": "cd client && npm install",
+    "build-client": "cd client && npm run build"
   },
   "keywords": [],
   "author": "",

@@ -6,11 +6,13 @@ export const useUserStore = create(
     (set) => ({
       user: null,
       setUser: (userData) => set({ user: userData }),
-      logoutUser: () => set({ user: null }),
+      logoutUser: () => {
+        set({ user: null });
+        useUserStore.persist.clearStorage();
+      },
     }),
     {
       name: "att_user_storage", // Unique key in localStorage
-    }
+    },
   ),
-  
 );

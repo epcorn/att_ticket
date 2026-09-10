@@ -19,7 +19,8 @@ export const useContractStore = create((set) => ({
   status: "initial",
 
   setFilteredContract: async (contracts, number) => {
-    const filtered = contracts.result.find((c) => c._id === number);
+    const filtered = contracts.result.find((c) => c.contractNo === number);
+    console.log(filtered);
     if (!filtered)
       return set({
         filterError: "contract Not found",
@@ -69,7 +70,8 @@ export const useContractStore = create((set) => ({
       shipToEmail: sKci?.map((k) => k?.email?.trim()).filter(Boolean),
     });
   },
-  resetStore: () =>
+  resetStore: () => {
+    localStorage.removeItem("create_ticket");
     set({
       filteredContract: {},
       billToName: "",
@@ -80,5 +82,6 @@ export const useContractStore = create((set) => ({
       status: "initial",
       billToEmail: [],
       shipToEmail: [],
-    }),
+    });
+  },
 }));

@@ -13,7 +13,7 @@ import { useContractStore } from "../store/useContractStore";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
-import { useCreateTicket, useUpdateTicket } from "../api/useTicket";
+import { useCreateTicket, useImageUploade, useUpdateTicket } from "../api/useTicket";
 import { timings } from "../utils/constData";
 
 const inputTheme = {
@@ -38,6 +38,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
     enabled: !view && !edit,
   });
 
+  const { mutateAsync: upload, isPending: uploading } = useImageUploade()
   const { mutateAsync: create, isPending: creatingTicket } = useCreateTicket();
   const { mutateAsync: update, isPending: updating } = useUpdateTicket();
 
@@ -122,7 +123,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
     resetStore();
 
     if (contracts?.result?.length && number) {
-      setFilteredContract(contracts, number);
+      setFilteredContract(contracts, number.toUpperCase());
     }
   };
 
@@ -152,12 +153,12 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
   useEffect(() => {
     if (view || edit) return;
 
-    if (billToAddress) setValue("contract.billToAddress", billToAddress);
-    if (billToName) setValue("contract.billToName", billToName);
-    if (shipToAddress) setValue("contract.shipToAddress", shipToAddress);
-    if (shipToName) setValue("contract.shipToName", shipToName);
-    if (billToEmail) setValue("contract.billToEmail", billToEmail);
-    if (shipToEmail) setValue("contract.shipToEmail", shipToEmail);
+    if (billToAddress) setValue("contract.billToAddress", billToAddress || "");
+    if (billToName) setValue("contract.billToName", billToName || "");
+    if (shipToAddress) setValue("contract.shipToAddress", shipToAddress || "");
+    if (shipToName) setValue("contract.shipToName", shipToName || "");
+    if (billToEmail) setValue("contract.billToEmail", billToEmail || []);
+    if (shipToEmail) setValue("contract.shipToEmail", shipToEmail || []);
     setValue("contract.treatment", "Anti Termite Treatment");
   }, [
     billToAddress,
@@ -183,9 +184,10 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
               placeholder="find Contracts"
               color={inputTheme[status]}
               disabled={view || edit}
+              className="uppercase"
               {...register("contract.number", { required: true })}
             />
-            {!view && !edit && (
+            {!view && !edit && (<>
               <Button
                 outline
                 className="cursor-pointer"
@@ -193,6 +195,7 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
                 onClick={fetchContract}>
                 {isFetching ? "fetching..." : "Fetch"}
               </Button>
+            </>
             )}
           </div>
           {isFetching && (
@@ -308,7 +311,13 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
             <div className="p-2 rounded-md">
               <h3 className="font-bold">Email Screenshot</h3>
               <ImageUploader
+                id="emailImage"
+                register={register}
+                handleSubmit={handleSubmit}
                 errors={errors}
+                upload={upload}
+                uploading={uploading}
+                onSuccess={(result) => setValue("modeDetails.email.emailCopy", result.link)}
                 disabled={view || edit}
                 buttonLabel="Image Upload"
                 header="Image Upload"
@@ -414,26 +423,45 @@ function CreateModal({ view = false, edit = false, ticket, onClose }) {
             </div>
           </div>
         )}
-
-        {!view && (
-          <Button
-            type="submit"
-            disabled={creatingTicket || updating}
-            className={`m-3 mx-auto transition-all duration-700 ${creatingTicket ? "bg-emerald-800" : "bg-emerald-600"}`}>
-            {creatingTicket || updating ? (
-              <div className="flex items-center gap-3">
-                <Spinner color="pink" size="md" />
-                Saving...
-              </div>
-            ) : edit ? (
-              "Update Ticket"
-            ) : (
-              "Create Ticket"
-            )}
-          </Button>
-        )}
+        <div className="flex justify-center gap-5">
+          {!view && (
+            <Button
+              type="submit"
+              disabled={creatingTicket || updating || isFetching}
+              className={`transition-all duration-700 ${creatingTicket ? "bg-emerald-800" : "bg-emerald-600"}`}>
+              {creatingTicket || updating ? (
+                <div className="flex items-center gap-3">
+                  <Spinner color="pink" size="md" />
+                  Saving...
+                </div>
+              ) : edit ? (
+                "Update Ticket"
+              ) : (
+                "Create Ticket"
+              )}
+            </Button>
+          )}
+          {!view && !edit &&
+            <Button onClick={() => {
+              resetStore(); reset({
+                contract: {
+                  number: "",
+                  billToName: "",
+                  billToAddress: "",
+                  shipToName: "",
+                  shipToAddress: "",
+                },
+                complainMode: "email",
+                modeDetails: {},
+                issue: {},
+              });
+            }}>
+              Clear
+            </Button>
+          }
+        </div>
       </form>
-    </div>
+    </div >
   );
 }
 

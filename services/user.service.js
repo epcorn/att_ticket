@@ -30,8 +30,34 @@ export const userService = {
       password,
       rights,
     });
-    
+
     user.password = undefined;
+
+    return user;
+  },
+  getAllUsers: async () => {
+    const users = await User.find({});
+    if (!users) {
+      const error = new Error("Users not found");
+      error.status = 404;
+      throw error;
+    }
+    return users;
+  },
+  updateUser: async (creds, id) => {
+    if (!creds.password || creds.password.trim() === "") {
+      delete creds.password;
+    }
+    const user = await User.findByIdAndUpdate(id, creds, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+
+    if (!user) {
+      const error = new Error("User not available");
+      error.status = 404;
+      throw error;
+    }
 
     return user;
   },

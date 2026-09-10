@@ -1,17 +1,37 @@
-import { Button, Modal, ModalBody, ModalHeader } from 'flowbite-react'
+import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 
-
-function ModalComponent({ open, btn, size = 'sm', setOpen, disabled = false, header = '', children, buttonLabel = '' }) {
-
+function ModalComponent({
+  open,
+  btn = '',
+  size = "sm",
+  setOpen,
+  disabled = false,
+  header = "",
+  children,
+  buttonLabel = "",
+  ...args
+}) {
   return (
-    <div className='m-2'>
-      <Button type='button' size={size} disabled={disabled} onClick={() => setOpen(true)} className={`cursor-pointer [corner-shape:squircle] hover:scale-102 hover:shadow-lg transition-all duration-700 ${btn}`}>{buttonLabel}</Button>
-      <Modal dismissible show={open} onClose={() => setOpen(false)} >
-        <ModalHeader className='bg-linear-60 from-green-50 from-10% to-green-200'>{header}</ModalHeader>
-        <ModalBody className='bg-white'>{children}</ModalBody>
+    <div className="m-2">
+      <Button
+        type="button"
+        size={size}
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+        {...args}
+        className={`cursor-pointer [corner-shape:squircle] hover:scale-98 hover:shadow-lg transition-all duration-700 ${btn}`}>
+        {buttonLabel}
+      </Button>
+
+      <Modal dismissible show={open} onClose={() => setOpen(false)}>
+        <ModalHeader className="bg-linear-60 from-green-50 from-10% to-green-200">
+          {header}
+        </ModalHeader>
+
+        <ModalBody className="bg-white">{children}</ModalBody>
       </Modal>
     </div>
-  )
+  );
 }
 
 export default ModalComponent;

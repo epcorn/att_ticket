@@ -10,16 +10,16 @@ function Layout() {
   const navigate = useNavigate();
   const handleLogout = () => {
     logoutUser();
-    localStorage.removeItem("att_user_storage");
     queryClient.clear();
-    navigate("/", { replace: true });
+    navigate("/login", { replace: true });
+    
   };
 
   return (
     <div>
       <ToastContainer closeOnClick position="top-center" />
 
-      <nav className="flex justify-between items-center px-5 py-4 outline bg-blue-50 shadow-md shadow-blue-500">
+      <nav className="flex justify-between items-center px-5 py-4 outline bg-blue-50 shadow-md shadow-blue-500 sticky top-0 z-999">
         <Link
           to={"/home"}
           className="uppercase italic font-semibold flex items-center gap-2">
@@ -51,6 +51,15 @@ function Layout() {
                 `font-semibold ${isActive ? "text-blue-500" : "text-gray-600"}`
               }>
               Assign
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to={"/users"}
+              className={({ isActive }) =>
+                `font-semibold ${isActive ? "text-blue-500" : "text-gray-600"}`
+              }>
+              Users
             </NavLink>
           </li>
         </ul>

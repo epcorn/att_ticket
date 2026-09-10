@@ -13,7 +13,6 @@ export const createTicket = async (req, res, next) => {
 
 export const updateTicket = async (req, res, next) => {
   const body = req.body.data;
-  console.log("body", body);
   try {
     let ticket;
     const shouldAssign =
@@ -22,6 +21,13 @@ export const updateTicket = async (req, res, next) => {
     if (body.status === "Closed") {
       try {
         ticket = await ticketServices.closeTicket(body, req);
+      } catch (error) {
+        next(error);
+      }
+    }
+    if (body.status === "Canceled") {
+      try {
+        ticket = await ticketServices.cancelTicket(body, req);
       } catch (error) {
         next(error);
       }
@@ -36,7 +42,7 @@ export const updateTicket = async (req, res, next) => {
     res.status(200).json({
       success: true,
       ticket,
-      msg: "ticket updated successfully",
+      msg: `ticket ${body?.status || body.key} successfully`,
     });
   } catch (error) {
     next(error);
@@ -49,7 +55,7 @@ export const getTickets = async (req, res, next) => {
       await ticketServices.getAllTickets(req);
     res.status(200).json({
       success: true,
-      tickets,
+      // tickets,
       totalTickets,
       filtered,
       msg: "tickets fetched successfully",
@@ -61,8 +67,17 @@ export const getTickets = async (req, res, next) => {
 
 export const getAllJobs = async (req, res, next) => {
   try {
-    const { todayJobs, tommorrowJobs } = await ticketServices.getAllJobs();
-    res.status(200).json({ todayJobs, tommorrowJobs });
+    const jobs = await ticketServices.getAllJobs();
+    res.status(200).json({ ...jobs });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRaisedCount = async (req, res, next) => {
+  try {
+    const counts = await ticketServices.getRaisedCount();
+    res.status(200).json(counts);
   } catch (error) {
     next(error);
   }

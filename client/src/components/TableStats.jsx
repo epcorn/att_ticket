@@ -1,4 +1,4 @@
-import { Alert, Spinner, TableCell, TableRow } from "flowbite-react";
+import { Alert, TableCell, TableRow } from "flowbite-react";
 import { Info } from "lucide-react";
 
 export function TableError({ count }) {
@@ -16,15 +16,25 @@ export function TableError({ count }) {
   )
 }
 
-export function TableLoading({ count }) {
+
+export const TableLoading = ({ count, yes = true }) => {
+  const rows = Array.from({ length: count });
   return (
-    <TableRow>
-      {/* Changed from Table.Cell */}
-      <TableCell colSpan={count} className="py-10">
-        <div className="flex justify-center items-center w-full">
-          <Spinner size="xl" />
-        </div>
-      </TableCell>
-    </TableRow>
-  )
-}
+    <>
+      {rows.map((_, rowIndex) => (
+        <TableRow key={rowIndex} className="animate-pulse bg-white dark:bg-gray-800">
+          <TableCell><div className="h-4 bg-gray-200 rounded dark:bg-gray-700 w-16"></div></TableCell>
+          <TableCell><div className="h-4 bg-gray-200 rounded dark:bg-gray-700 w-24"></div></TableCell>
+          <TableCell><div className="h-4 bg-gray-200 rounded dark:bg-gray-700 w-32"></div></TableCell>
+          {yes &&
+            <>
+              <TableCell><div className="h-4 bg-gray-200 rounded dark:bg-gray-700 w-8"></div></TableCell>
+              <TableCell><div className="h-4 bg-gray-200 rounded dark:bg-gray-700 w-20"></div></TableCell>
+              <TableCell><div className="h-6 bg-gray-200 rounded-full dark:bg-gray-700 w-16"></div></TableCell>
+            </>
+          }
+        </TableRow>
+      ))}
+    </>
+  );
+};

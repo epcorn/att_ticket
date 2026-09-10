@@ -1,4 +1,5 @@
 import { Ticket } from "../models/ticketModel.js";
+import { emailService } from "./email.service.js";
 import { ticketHistoryService } from "./ticketHistory.service.js";
 
 export const ticketServices = {
@@ -85,6 +86,8 @@ export const ticketServices = {
           scheduledTime: data.scheduledTime,
         },
       );
+      const result = await emailService.ticketRescheduled(ticket);
+      console.log("results:", result);
       return ticket;
     } catch (error) {
       console.error(error);
@@ -92,62 +95,112 @@ export const ticketServices = {
     }
   },
 
-  cancelTicket: async (data, ticketId) => {},
+  cancelTicket: async (data, req) => {
+    try {
+      const ticket = await Ticket.findOneAndUpdate(
+        { _id: req.params.id, status: { $ne: "Closed" } },
+        { $set: { status: "Canceled" } },
+        { returnDocument: "after" },
+      );
+      return ticket;
+    } catch (error) {
+      throw error;
+    }
+  },
 
   getAllTickets: async (req) => {
     try {
-      const startIdx = parseInt(req.query.startIdx) || 0;
-      const limit = parseInt(req.query.limit) || 0;
-      const sort = req.query.order === "asc" ? 1 : -1;
+      const {
+        order,
+        startIndex,
+        limit,
+        createdBy,
+        contractNo,
+        ticketNo,
+        status,
+      } = req.query;
 
-      const [tickets, totalTickets, filtered] = await Promise.all([
-        Ticket.find({}),
+      const filter = {};
+      if (createdBy)
+        filter["createdBy.username"] = { $regex: createdBy, $options: "i" };
+      if (contractNo) filter["contract.number"] = contractNo;
+      if (ticketNo) filter.ticketNo = ticketNo;
+      if (status) filter.status = status;
+
+      const [totalTickets, filtered] = await Promise.all([
         Ticket.countDocuments({}),
-        Ticket.find({
-          ...(req.query.createdBy && {
-            "createdBy.username": {
-              $regex: new RegExp(req.query.createdBy, "i"),
-            },
-          }),
-          ...(req.query.contract && { "contract.number": req.query.contract }),
-          ...(req.query.ticketNo && { ticketNo: req.query.ticketNo }),
-        })
-          .lean()
+        Ticket.find(filter)
+          .sort({ createdAt: order === "asc" ? 1 : -1 })
+          .skip(parseInt(startIndex) || 0)
+          .limit(parseInt(limit) || 20)
           .populate("history")
-          .sort({ createdAt: sort })
-          .skip(startIdx)
-          .limit(limit),
+          .lean(),
       ]);
-      return { tickets, totalTickets, filtered };
+
+      return { totalTickets, filtered };
     } catch (error) {
       console.error(error);
       throw error;
     }
   },
+
   getAllJobs: async () => {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const tommorrow = new Date(today);
-      tommorrow.setDate(today.getDate() + 1);
-      const dayAfterTomm = new Date(tommorrow).setDate(tommorrow.getDate() + 1);
-      const assignedJobs = await Ticket.find({
-        status: "Assigned",
-        scheduledDate: { $gte: today, $lt: dayAfterTomm },
-      });
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+
+      const [assignedJobs, statusCount] = await Promise.all([
+        Ticket.find({ status: "Assigned" }),
+        Ticket.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+      ]);
 
       const todayJobs = [];
-      const tommorrowJobs = [];
+      const tomorrowJobs = [];
 
       assignedJobs.forEach((job) => {
-        const jobTime = new Date(job.scheduledDate).setHours(0, 0, 0, 0);
-        if (jobTime === today.getTime()) {
-          todayJobs.push(job);
-        } else if (jobTime === tommorrow.getTime()) {
-          tommorrowJobs.push(job);
+        if (job.scheduledDate) {
+          const jobDate = new Date(job.scheduledDate);
+          jobDate.setHours(0, 0, 0, 0);
+
+          if (jobDate.getTime() === today.getTime()) {
+            todayJobs.push(job);
+          } else if (jobDate.getTime() === tomorrow.getTime()) {
+            tomorrowJobs.push(job);
+          }
         }
       });
-      return { todayJobs, tommorrowJobs };
+      const counts = statusCount.reduce(
+        (acc, curr) => {
+          acc[curr._id] = curr.count;
+          return acc;
+        },
+        { Open: 0, Assigned: 0, Closed: 0, Canceled: 0 },
+      );
+
+      return { todayJobs, tomorrowJobs, counts };
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      throw error;
+    }
+  },
+
+  getRaisedCount: async () => {
+    try {
+      const ticket = await Ticket.aggregate([
+        {
+          $match: { status: { $ne: "Canceled" } },
+        },
+        {
+          $group: {
+            _id: "$contract.number",
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+      return ticket;
     } catch (error) {
       throw error;
     }

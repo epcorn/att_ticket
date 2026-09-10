@@ -5,14 +5,17 @@ import { useUpdateTicket } from "../../api/useTicket";
 import { toast } from "react-toastify";
 
 function Reschedule({ ticket, onClose }) {
-  const { mutateAsync: update, isPending: updating, error } = useUpdateTicket()
+  const { mutateAsync: update, isPending: updating } = useUpdateTicket()
 
   const todayStr = new Date().toISOString().split("T")[0];
+  const formattedTicketDate = ticket?.scheduledDate
+    ? new Date(ticket.scheduledDate).toISOString().split("T")[0]
+    : "";
 
-  const { handleSubmit, formState: { errors }, register } = useForm()
+  const { handleSubmit, formState: { errors }, register } = useForm({ defaultValues: { scheduledDate: formattedTicketDate, scheduledTime: ticket.scheduledTime, message: "" } })
+  
   const submit = async (data) => {
     try {
-
       data.key = 'reschedule'
       console.log(data)
       await update({ data, id: ticket?._id })
@@ -23,7 +26,7 @@ function Reschedule({ ticket, onClose }) {
       throw error
     }
   }
-
+  console.log(new Date(ticket?.scheduledDate).toISOString().split("T")[0])
   return (
     <form onSubmit={handleSubmit(submit)}>
       <div>
@@ -34,7 +37,6 @@ function Reschedule({ ticket, onClose }) {
           id="scheduledDate"
           className="w-full px-3 py-2 border rounded-md"
           type="date"
-          // name="scheduledDate" // Note: You can remove this; register overrides it automatically
           min={todayStr} // Use the string value here
           {...register("scheduledDate", {
             required: "Date is required",
@@ -51,7 +53,7 @@ function Reschedule({ ticket, onClose }) {
           id="scheduledTime"
           {...register("scheduledTime", { required: "scheduled time required" })}
         >
-          <option value="" disabled selected>
+          <option value='' disabled selected>
             Select a time range
           </option>
           {timings.map(t => (

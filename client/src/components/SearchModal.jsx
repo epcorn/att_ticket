@@ -12,8 +12,8 @@ function SearchModal({ errors, register, handleSubmit, setFilters }) {
   };
   return (
 
-    <div className="m-5 ">
-      <form action="" onSubmit={handleSubmit(onSearch)} className="space-y-3">
+    <div className="p-5">
+      <form action="" onSubmit={handleSubmit(onSearch)} className="space-y-3 shadow-lg rounded p-1">
         <div className="grid grid-cols-4 gap-3">
           <FormInput type="search" required={false} errors={errors} register={register} label='Created By' id='createdBy' />
           <FormInput type="search" required={false} errors={errors} register={register} label='Contract No' id='contract' />
